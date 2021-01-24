@@ -6,6 +6,7 @@ name = "hua"
 version = "0.1.0"
 
 [dependencies]
+minifb = "0.13.0"
 # image = "0.23.12"
 num-traits = "0.2.14"
 png = "0.16.8"
