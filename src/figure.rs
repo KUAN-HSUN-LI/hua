@@ -1,27 +1,63 @@
+use crate::{drawing, preview::Preview};
 use core::slice;
+use drawing::canvas::Canvas;
 use minifb::{Key, Window, WindowOptions};
 use png;
-use preview::Preview;
-use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
+use std::{fs::File, unimplemented};
 
-use crate::{preview, RGBAColor};
+use crate::color::RGBAColor;
 pub trait Saver {
     fn save(&self, output_name: &str);
 }
 
+#[allow(dead_code)]
 pub struct Figure {
-    pub size: (usize, usize),
-    pub buffer: Vec<RGBAColor<u8>>,
+    size: (usize, usize),
+    canvas: Canvas<RGBAColor<u8>>,
+    options: Vec<FigureOption>,
 }
+
+pub enum FigureOption {}
 
 impl Figure {
     pub fn new(width: usize, height: usize) -> Self {
         Figure {
             size: (width, height),
-            buffer: vec![RGBAColor::<u8>(0, 0, 0, 0); width * height],
+            canvas: Canvas::<RGBAColor<u8>>::new(0, 0, width as u32, height as u32),
+            options: vec![],
         }
+    }
+
+    #[allow(dead_code)]
+    pub fn line(&self) {
+        unimplemented!()
+    }
+
+    #[allow(dead_code)]
+    pub fn title(&self) {
+        unimplemented!()
+    }
+
+    #[allow(dead_code)]
+    pub fn x_axis(&self) {
+        unimplemented!()
+    }
+
+    #[allow(dead_code)]
+    pub fn y_axis(&self) {
+        unimplemented!()
+    }
+
+    #[allow(dead_code)]
+    pub fn set_axis(&self) {
+        unimplemented!()
+    }
+
+    #[allow(dead_code)]
+    pub fn draw(&self) {
+        unimplemented!()
     }
 }
 
@@ -35,7 +71,10 @@ impl Saver for Figure {
         let mut writer = encoder.write_header().unwrap();
         writer
             .write_image_data(unsafe {
-                slice::from_raw_parts(self.buffer.as_ptr() as *mut u8, self.buffer.len() * 4)
+                slice::from_raw_parts(
+                    self.canvas.buf.as_ptr() as *mut u8,
+                    self.canvas.buf.len() * 4,
+                )
             })
             .unwrap();
     }
@@ -43,14 +82,9 @@ impl Saver for Figure {
 
 impl Preview for Figure {
     fn show(&self) {
-        let buffer = &self.buffer;
-        let mut window = Window::new(
-            "Preview",
-            self.size.0,
-            self.size.1,
-            WindowOptions::default(),
-        )
-        .unwrap();
+        let buffer = &self.canvas.buf;
+        let (w, h) = self.size;
+        let mut window = Window::new("Preview", w, h, WindowOptions::default()).unwrap();
         while window.is_open() && !window.is_key_down(Key::Escape) {
             window
                 .update_with_buffer(unsafe { std::mem::transmute(&buffer[..]) })

@@ -1,9 +1,17 @@
 trait Color {}
 
 #[derive(Debug, Clone, Copy)]
-pub struct RGBColor<T>(pub T, pub T, pub T);
+pub struct RGBColor<T>(pub(crate) T, pub(crate) T, pub(crate) T);
+
+impl<T> RGBColor<T> {
+    #[allow(dead_code)]
+    fn rgb2rgba(&self) -> Self {
+        unimplemented!()
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
-pub struct RGBAColor<T>(pub T, pub T, pub T, pub T);
+pub struct RGBAColor<T>(pub(crate) T, pub(crate) T, pub(crate) T, pub(crate) T);
 
 pub const BLACK: RGBColor<u8> = RGBColor(0, 0, 0);
 pub const RED: RGBColor<u8> = RGBColor(255, 0, 0);

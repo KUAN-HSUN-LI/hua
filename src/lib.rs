@@ -1,7 +1,11 @@
-pub mod color;
+pub mod backend;
+pub mod drawing;
 pub mod figure;
 pub mod preview;
-pub use crate::color::*;
+pub mod styles;
+
+pub use crate::styles::color;
+pub use crate::styles::color::{BLACK, BLUE, CYAN, GREEN, MAGENTA, RED, WHITE, YELLOW};
 pub use figure::Saver;
 pub use preview::Preview;
 
