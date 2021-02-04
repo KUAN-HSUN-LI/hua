@@ -8,11 +8,11 @@ version = "0.1.0"
 [dependencies]
 minifb = "0.13.0"
 # image = "0.23.12"
-num-traits = "0.2.14"
+# num-traits = "0.2.14"
 png = "0.16.8"
-wasm-bindgen = "0.2.69"
+# wasm-bindgen = "0.2.69"
 # ttf-parser = "0.10.1"
 # js-sys = "0.3.46"
-web-sys = {version = "0.3", features = ['HtmlCanvasElement']}
+# web-sys = {version = "0.3", features = ['HtmlCanvasElement']}
 # wee_alloc = {version = "0.4.5", optional = true}
 # console_error_panic_hook = {version = "0.1.6", optional = true}

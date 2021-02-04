@@ -1,6 +1,9 @@
-use crate::{drawing, preview::Preview};
+use crate::{drawing, elements, preview::Preview};
 use core::slice;
-use drawing::canvas::Canvas;
+use drawing::canvas::{Canvas, Drawing};
+use elements::fig::FigElm;
+use elements::fig::FigureOption;
+use elements::Element;
 use minifb::{Key, Window, WindowOptions};
 use png;
 use std::io::BufWriter;
@@ -8,25 +11,26 @@ use std::path::Path;
 use std::{fs::File, unimplemented};
 
 use crate::color::RGBAColor;
+
+#[allow(dead_code)]
+pub struct Figure {
+    size: (u32, u32),
+    canvas: Canvas<RGBAColor>,
+    elms: Vec<Box<dyn Element>>,
+}
+
 pub trait Saver {
     fn save(&self, output_name: &str);
 }
 
-#[allow(dead_code)]
-pub struct Figure {
-    size: (usize, usize),
-    canvas: Canvas<RGBAColor<u8>>,
-    options: Vec<FigureOption>,
-}
-
-pub enum FigureOption {}
-
 impl Figure {
-    pub fn new(width: usize, height: usize) -> Self {
+    #[allow(unused_variables)]
+    pub fn new(width: u32, height: u32, options: Vec<FigureOption>) -> Self {
+        let figelm = FigElm::new(options);
         Figure {
             size: (width, height),
-            canvas: Canvas::<RGBAColor<u8>>::new(0, 0, width as u32, height as u32),
-            options: vec![],
+            canvas: Canvas::<RGBAColor>::new(0, 0, width as u32, height as u32),
+            elms: vec![Box::new(figelm)],
         }
     }
 
@@ -56,9 +60,13 @@ impl Figure {
     }
 
     #[allow(dead_code)]
-    pub fn draw(&self) {
-        unimplemented!()
+    pub fn draw(&mut self) -> &mut Self {
+        self.canvas.draw_background(RGBAColor(255, 255, 255, 255));
+        self
     }
+
+    #[allow(dead_code)]
+    fn parse_option() {}
 }
 
 impl Saver for Figure {
@@ -84,7 +92,8 @@ impl Preview for Figure {
     fn show(&self) {
         let buffer = &self.canvas.buf;
         let (w, h) = self.size;
-        let mut window = Window::new("Preview", w, h, WindowOptions::default()).unwrap();
+        let mut window =
+            Window::new("Preview", w as usize, h as usize, WindowOptions::default()).unwrap();
         while window.is_open() && !window.is_key_down(Key::Escape) {
             window
                 .update_with_buffer(unsafe { std::mem::transmute(&buffer[..]) })
