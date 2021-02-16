@@ -17,4 +17,4 @@ pub struct Triangle {
 }
 
 #[allow(dead_code)]
-pub struct Ploygon {}
+pub struct Polygon {}

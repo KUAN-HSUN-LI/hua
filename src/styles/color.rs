@@ -5,7 +5,7 @@ pub struct RGBColor(pub(crate) u8, pub(crate) u8, pub(crate) u8);
 
 impl RGBColor {
     #[allow(dead_code)]
-    fn rgb2rgba(&self) -> RGBAColor {
+    pub fn to_rgba(&self) -> RGBAColor {
         RGBAColor(self.0, self.1, self.2, 255)
     }
 }

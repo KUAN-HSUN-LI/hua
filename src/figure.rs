@@ -1,22 +1,24 @@
-use crate::{drawing, elements, preview::Preview};
+use crate::{
+    backend::canvas::Canvas,
+    build::{builder::CanvasBuilder, utils::LayoutPostion::*},
+    elements::ElmType,
+};
+use crate::{elements, preview::Preview};
 use core::slice;
-use drawing::canvas::{Canvas, Drawing};
-use elements::fig::FigElm;
-use elements::fig::FigureOption;
-use elements::Element;
+use elements::{axis::AxisElm, fig::FigureOption};
+use elements::{axis::AxisOption, fig::FigElm};
 use minifb::{Key, Window, WindowOptions};
 use png;
+use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
-use std::{fs::File, unimplemented};
-
-use crate::color::RGBAColor;
 
 #[allow(dead_code)]
 pub struct Figure {
     size: (u32, u32),
-    canvas: Canvas<RGBAColor>,
-    elms: Vec<Box<dyn Element>>,
+    canvas: Canvas,
+    fig_elm: FigElm,
+    label_elms: [Vec<ElmType>; 4], // top, bottom, left, right
 }
 
 pub trait Saver {
@@ -26,42 +28,55 @@ pub trait Saver {
 impl Figure {
     #[allow(unused_variables)]
     pub fn new(width: u32, height: u32, options: Vec<FigureOption>) -> Self {
-        let figelm = FigElm::new(options);
+        const INIT: Vec<ElmType> = vec![];
         Figure {
             size: (width, height),
-            canvas: Canvas::<RGBAColor>::new(0, 0, width as u32, height as u32),
-            elms: vec![Box::new(figelm)],
+            canvas: Canvas::new(width, height),
+            fig_elm: FigElm::new(options),
+            label_elms: [INIT; 4], // top, bottom, left, right
         }
     }
 
     #[allow(dead_code)]
-    pub fn line(&self) {
-        unimplemented!()
+    pub fn line(&self) -> Self {
+        todo!()
     }
 
     #[allow(dead_code)]
-    pub fn title(&self) {
-        unimplemented!()
+    pub fn title(&self) -> Self {
+        todo!()
     }
 
     #[allow(dead_code)]
-    pub fn x_axis(&self) {
-        unimplemented!()
+    pub fn x_axis(&mut self, options: Vec<AxisOption>) -> &mut Self {
+        self.label_elms[Bottom as usize].push(ElmType::Axis(AxisElm::new(options)));
+        self
     }
 
     #[allow(dead_code)]
-    pub fn y_axis(&self) {
-        unimplemented!()
+    pub fn y_axis(&mut self, options: Vec<AxisOption>) -> &mut Self {
+        self.label_elms[Left as usize].push(ElmType::Axis(AxisElm::new(options)));
+        self
     }
 
     #[allow(dead_code)]
-    pub fn set_axis(&self) {
-        unimplemented!()
+    pub fn set_axis(&self) -> Self {
+        todo!()
+    }
+
+    #[allow(dead_code)]
+    pub fn x_label(&self) -> Self {
+        todo!()
+    }
+
+    #[allow(dead_code)]
+    pub fn y_label(&self) -> Self {
+        todo!()
     }
 
     #[allow(dead_code)]
     pub fn draw(&mut self) -> &mut Self {
-        self.canvas.draw_background(RGBAColor(255, 255, 255, 255));
+        CanvasBuilder::run(&mut self.canvas, &self.fig_elm, &self.label_elms);
         self
     }
 
@@ -80,8 +95,8 @@ impl Saver for Figure {
         writer
             .write_image_data(unsafe {
                 slice::from_raw_parts(
-                    self.canvas.buf.as_ptr() as *mut u8,
-                    self.canvas.buf.len() * 4,
+                    self.canvas.borrow_buf().as_ptr() as *mut u8,
+                    self.canvas.borrow_buf().len() * 4,
                 )
             })
             .unwrap();
@@ -90,7 +105,7 @@ impl Saver for Figure {
 
 impl Preview for Figure {
     fn show(&self) {
-        let buffer = &self.canvas.buf;
+        let buffer = &self.canvas.borrow_buf();
         let (w, h) = self.size;
         let mut window =
             Window::new("Preview", w as usize, h as usize, WindowOptions::default()).unwrap();
